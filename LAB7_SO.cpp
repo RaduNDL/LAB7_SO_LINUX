@@ -5,32 +5,32 @@
 #include <sys/mman.h>
 #include <cstring>
 
-// Variabile globale partajate între procese (utilizând mmap)
+// Variabile globale partajate intre procese (utilizand mmap)
 bool *lastWasWhite;
 sem_t *mutex;
 sem_t *whiteQueue;
 sem_t *blackQueue;
 
-// Funcția care simulează procesul alb
+// Functia care simuleaza procesul alb
 void runWhiteProcess() {
-    std::cout << "Procesul alb rulează...\n";
-    sleep(1); // Simulează timp de execuție
+    std::cout << "Procesul alb ruleaza...\n";
+    sleep(1); // Simuleaza timp de executie
 }
 
-// Funcția care simulează procesul negru
+// Functia care simuleaza procesul negru
 void runBlackProcess() {
-    std::cout << "Procesul negru rulează...\n";
-    sleep(1); // Simulează timp de execuție
+    std::cout << "Procesul negru ruleaza...\n";
+    sleep(1); // Simuleaza timp de executie
 }
 
-// Funcția de accesare a resursei de către procese albe și negre
+// Functia de accesare a resursei de catre procese albe si negre
 void accessResource(const std::string &processType) {
     if (processType == "white") {
         sem_wait(whiteQueue);
         if (!*lastWasWhite) {
             sem_wait(mutex);
         }
-        std::cout << "Procesul alb accesează resursa.\n";
+        std::cout << "Procesul alb acceseaza resursa.\n";
         runWhiteProcess();
         std::cout << "Procesul alb a terminat utilizarea resursei.\n";
         *lastWasWhite = true;
@@ -41,7 +41,7 @@ void accessResource(const std::string &processType) {
         if (*lastWasWhite) {
             sem_wait(mutex);
         }
-        std::cout << "Procesul negru accesează resursa.\n";
+        std::cout << "Procesul negru acceseaza resursa.\n";
         runBlackProcess();
         std::cout << "Procesul negru a terminat utilizarea resursei.\n";
         *lastWasWhite = false;
@@ -51,13 +51,13 @@ void accessResource(const std::string &processType) {
 }
 
 int main() {
-    // Alocare memorie partajată pentru variabile globale
+    // Alocare memorie partajata pentru variabile globale
     lastWasWhite = static_cast<bool *>(mmap(NULL, sizeof(bool), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
     mutex = static_cast<sem_t *>(mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
     whiteQueue = static_cast<sem_t *>(mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
     blackQueue = static_cast<sem_t *>(mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
 
-    // Inițializare semafoare
+    // Initializare semafoare
     sem_init(mutex, 1, 1);
     sem_init(whiteQueue, 1, 1);
     sem_init(blackQueue, 1, 1);
@@ -65,7 +65,7 @@ int main() {
 
     pid_t pids[4];
 
-    // Crearea proceselor albe și negre
+    // Crearea proceselor albe si negre
     for (int i = 0; i < 4; i++) {
         pids[i] = fork();
         if (pids[i] == 0) {
@@ -74,16 +74,16 @@ int main() {
             } else {
                 accessResource("black");
             }
-            _exit(0); // Termină procesul copil
+            _exit(0); // Termina procesul copil
         }
     }
 
-    // Așteaptă toate procesele copil să termine
+    // Asteapta toate procesele copil sa termine
     for (int i = 0; i < 4; i++) {
         waitpid(pids[i], NULL, 0);
     }
 
-    // Distrugere semafoare și eliberare memorie partajată
+    // Distrugere semafoare si eliberare memorie partajata
     sem_destroy(mutex);
     sem_destroy(whiteQueue);
     sem_destroy(blackQueue);
