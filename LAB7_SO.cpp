@@ -32,7 +32,7 @@ void accessResource(const std::string &processType) {
         }
         std::cout << "Procesul alb acceseaza resursa.\n";
         runWhiteProcess();
-        std::cout << "Procesul alb a terminat utilizarea resursei.\n";
+        std::cout << "Procesul alb a intrat in vacanta.\n";
         *lastWasWhite = true;
         sem_post(mutex);
         sem_post(whiteQueue);
@@ -43,7 +43,7 @@ void accessResource(const std::string &processType) {
         }
         std::cout << "Procesul negru acceseaza resursa.\n";
         runBlackProcess();
-        std::cout << "Procesul negru a terminat utilizarea resursei.\n";
+        std::cout << "Procesul negru a intrat in vacanta.\n";
         *lastWasWhite = false;
         sem_post(mutex);
         sem_post(blackQueue);
